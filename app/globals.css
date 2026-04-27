@@ -1,0 +1,230 @@
+@import url("https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap");
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Manrope", "Segoe UI", sans-serif;
+  --font-heading: "Space Grotesk", "Segoe UI", sans-serif;
+  --font-mono-data: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  --color-background: oklch(0.98 0.004 255);
+  --color-foreground: oklch(0.25 0.02 257);
+  --color-card: oklch(0.995 0.002 255);
+  --color-input: oklch(0.996 0.002 255);
+  --color-border: oklch(0.89 0.01 255);
+  --color-ring: oklch(0.56 0.11 232);
+
+  --color-muted: oklch(0.95 0.006 255);
+  --color-muted-foreground: oklch(0.5 0.02 256);
+
+  --color-primary: oklch(0.56 0.11 232);
+  --color-primary-foreground: oklch(0.99 0.002 255);
+  --color-secondary: oklch(0.95 0.01 232);
+  --color-secondary-foreground: oklch(0.32 0.03 238);
+
+  --color-accent: oklch(0.56 0.11 232);
+  --color-accent-foreground: oklch(0.99 0.002 255);
+  --color-tertiary: oklch(0.8 0.14 82);
+  --color-quaternary: oklch(0.72 0.15 52);
+
+  --color-status-active: oklch(0.61 0.11 232);
+  --color-status-warning: oklch(0.78 0.14 75);
+  --color-status-error: oklch(0.61 0.21 28);
+  --color-status-offline: oklch(0.63 0.02 255);
+  --color-status-pending: oklch(0.7 0.14 52);
+
+  --color-chart-1: #2563eb;
+  --color-chart-2: #0ea5e9;
+  --color-chart-3: #f59e0b;
+  --color-chart-4: #f97316;
+  --color-chart-5: #475569;
+
+  --radius-sm: 0.5rem;
+  --radius-md: 0.75rem;
+  --radius-lg: 1rem;
+  --radius-xl: 1.25rem;
+  --radius-2xl: 1.5rem;
+
+  --shadow-soft-sm: 0 1px 2px rgb(15 23 42 / 0.06);
+  --shadow-soft-md: 0 10px 30px rgb(15 23 42 / 0.08);
+  --shadow-soft-lg: 0 18px 44px rgb(15 23 42 / 0.12);
+
+  --ease-bounce: cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+:root {
+  --bg-base: var(--color-background);
+  --bg-surface: var(--color-card);
+  --bg-elevated: color-mix(in oklab, var(--color-card) 92%, white);
+  --bg-overlay: color-mix(in oklab, var(--color-muted) 70%, white);
+
+  --text-primary: var(--color-foreground);
+  --text-secondary: color-mix(in oklab, var(--color-foreground) 78%, white);
+  --text-muted: var(--color-muted-foreground);
+
+  --border-default: var(--color-border);
+  --border-subtle: color-mix(in oklab, var(--color-border) 72%, white);
+
+  --accent-primary: var(--color-primary);
+  --accent-primary-muted: color-mix(in oklab, var(--color-primary) 22%, white);
+  --accent-primary-border: color-mix(in oklab, var(--color-primary) 30%, var(--color-border));
+
+  --status-active: var(--color-status-active);
+  --status-warning: var(--color-status-warning);
+  --status-error: var(--color-status-error);
+  --status-offline: var(--color-status-offline);
+  --status-pending: var(--color-status-pending);
+
+  --card: var(--color-card);
+  --foreground: var(--color-foreground);
+  --border: var(--color-border);
+  --muted-foreground: var(--color-muted-foreground);
+
+  --chart-1: var(--color-chart-1);
+  --chart-2: var(--color-chart-2);
+  --chart-3: var(--color-chart-3);
+  --chart-4: var(--color-chart-4);
+  --chart-5: var(--color-chart-5);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  min-height: 100%;
+}
+
+body {
+  margin: 0;
+  background:
+    radial-gradient(circle at 8% 12%, color-mix(in oklab, var(--color-primary) 11%, transparent), transparent 28%),
+    radial-gradient(circle at 88% 4%, color-mix(in oklab, var(--color-quaternary) 9%, transparent), transparent 24%),
+    linear-gradient(180deg, color-mix(in oklab, var(--color-background) 88%, white), var(--color-background));
+  color: var(--color-foreground);
+  font-family: var(--font-sans);
+  font-size: 15px;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+.font-heading {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.font-heading-bold {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  letter-spacing: -0.012em;
+}
+
+.font-mono-data {
+  font-family: var(--font-mono-data);
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: color-mix(in oklab, var(--color-muted) 90%, white);
+}
+
+::-webkit-scrollbar-thumb {
+  background: color-mix(in oklab, var(--color-muted-foreground) 35%, white);
+  border-radius: 999px;
+  border: 2px solid color-mix(in oklab, var(--color-background) 90%, white);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: color-mix(in oklab, var(--color-primary) 45%, var(--color-muted-foreground));
+}
+
+::selection {
+  background: color-mix(in oklab, var(--color-primary) 28%, white);
+}
+
+:focus-visible {
+  outline: 2px solid color-mix(in oklab, var(--color-primary) 75%, black);
+  outline-offset: 2px;
+}
+
+.surface-card {
+  background: color-mix(in oklab, var(--color-card) 97%, white);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-soft-sm);
+}
+
+.surface-elevated {
+  background: color-mix(in oklab, var(--color-card) 93%, white);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-soft-md);
+}
+
+@keyframes subtle-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.62;
+  }
+}
+
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes gentle-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(-3px);
+  }
+}
+
+.status-pulse {
+  animation: subtle-pulse 1.9s ease-in-out infinite;
+}
+
+.pop-in {
+  animation: fade-up 220ms ease-out both;
+}
+
+.wiggle-hover:hover {
+  transform: translateY(-1px);
+  transition: transform 180ms ease-out;
+}
+
+.float {
+  animation: gentle-float 2800ms ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 1ms !important;
+    scroll-behavior: auto !important;
+  }
+}

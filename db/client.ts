@@ -10,10 +10,14 @@ if (!databaseUrl) {
 }
 
 export const sql = postgres(databaseUrl, {
-  max: 50,
+  max: 1,
   idle_timeout: 20,
   connect_timeout: 10,
-  prepare: true,
+  // prepare: false is required for serverless environments where connections are
+  // short-lived and may be routed through a connection pooler (e.g., RDS Proxy,
+  // PgBouncer in transaction mode). Prepared statements are scoped to a
+  // connection and will cause "prepared statement already exists" errors on reuse.
+  prepare: false,
 });
 
 export const db = drizzle(sql, { schema });

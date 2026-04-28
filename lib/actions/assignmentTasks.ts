@@ -1,9 +1,8 @@
 "use server";
 
 import { randomUUID } from "node:crypto";
-import { mkdir, writeFile } from "node:fs/promises";
-import path from "node:path";
 
+import { put } from "@vercel/blob";
 import { headers } from "next/headers";
 import { z } from "zod";
 
@@ -14,13 +13,9 @@ import {
 } from "@/lib/services/taskService";
 
 const ALLOWED_IMAGE_MIME_TYPES = new Set(["image/jpeg", "image/png", "image/webp"]);
-const MAX_IMAGE_SIZE_BYTES = 5 * 1024 * 1024;
-const PEDESTAL_UPLOAD_DIR = path.join(
-  process.cwd(),
-  "public",
-  "uploads",
-  "pedestal-device-ids"
-);
+// Vercel Functions have a 4.5 MB total request-body limit. Keep the image
+// ceiling below that to leave room for the other form fields.
+const MAX_IMAGE_SIZE_BYTES = 4 * 1024 * 1024;
 
 const CreateTaskSchema = z.object({
   requestedBoardType: z.enum(["CLOUD_SOLAR", "PAYGO", "INNOVEX"]).optional().or(z.literal("")),
@@ -169,13 +164,15 @@ async function persistPedestalDevicePhoto(formData: FormData): Promise<string | 
   }
 
   const extension = extensionForMimeType(file.type);
-  const fileName = `${Date.now()}-${randomUUID()}.${extension}`;
+  const fileName = `pedestal-device-ids/${Date.now()}-${randomUUID()}.${extension}`;
 
-  await mkdir(PEDESTAL_UPLOAD_DIR, { recursive: true });
-  const bytes = await file.arrayBuffer();
-  await writeFile(path.join(PEDESTAL_UPLOAD_DIR, fileName), Buffer.from(bytes));
+  const blob = await put(fileName, file, {
+    access: "public",
+    addRandomSuffix: false,
+    contentType: file.type,
+  });
 
-  return `/uploads/pedestal-device-ids/${fileName}`;
+  return blob.url;
 }
 
 export async function createAssignmentTaskAction(

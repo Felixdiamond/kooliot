@@ -1,8 +1,4 @@
-import { mkdirSync } from "node:fs";
-import path from "node:path";
 import { randomUUID } from "node:crypto";
-
-import { createStream } from "rotating-file-stream";
 
 type LogLevel = "info" | "warn" | "error";
 
@@ -11,28 +7,16 @@ type BaseLogPayload = {
   [key: string]: unknown;
 };
 
-const logDirectory = path.join(process.cwd(), "logs");
-mkdirSync(logDirectory, { recursive: true });
-
-const appLogStream = createStream("app.log", {
-  path: logDirectory,
-  size: "100M",
-  interval: "1d",
-  maxFiles: 30,
-  compress: "gzip",
-});
-
-const upstreamLogStream = createStream("upstream_responses.log", {
-  path: logDirectory,
-  size: "100M",
-  interval: "1d",
-  maxFiles: 30,
-  compress: "gzip",
-});
-
 function writeLine(streamName: "app" | "upstream", payload: Record<string, unknown>) {
-  const stream = streamName === "app" ? appLogStream : upstreamLogStream;
-  stream.write(`${JSON.stringify(payload)}\n`);
+  const line = JSON.stringify({ ...payload, stream: streamName });
+  const level = payload["level"] as LogLevel | undefined;
+  if (level === "error") {
+    console.error(line);
+  } else if (level === "warn") {
+    console.warn(line);
+  } else {
+    console.log(line);
+  }
 }
 
 export function logEvent(level: LogLevel, event: string, payload: BaseLogPayload = {}) {

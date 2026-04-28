@@ -30,7 +30,7 @@ function isTaskAssignmentApiKeyAuthorized(request: NextRequest): boolean {
   return providedKey === configuredKey;
 }
 
-export async function middleware(request: NextRequest): Promise<NextResponse> {
+export async function proxy(request: NextRequest): Promise<NextResponse> {
   const session = request.cookies.get(sessionCookie.name);
   const isApiRequest = request.nextUrl.pathname.startsWith("/api/");
   const isTaskAssignmentEndpoint = request.nextUrl.pathname === "/api/task-assignments";

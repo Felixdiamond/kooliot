@@ -8,7 +8,7 @@ import { z } from "zod";
 import { db } from "@/db/client";
 import { users } from "@/db/schema";
 import { createSessionToken, type SessionRole, sessionCookie } from "@/lib/auth/session";
-import { logAuthAttempt, withQueryLogging } from "@/lib/logging/logger";
+import { logAuthAttempt, logError, withQueryLogging } from "@/lib/logging/logger";
 import type { Role } from "@/lib/types";
 
 const emailSchema = z.email();

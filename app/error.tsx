@@ -4,7 +4,7 @@ import { useEffect } from "react";
 
 import { Button } from "@/components/ui/Button";
 
-export default function Error({ error, reset }: { error: Error; reset: () => void }) {
+export default function Error({ error, reset }: { error: Error & { digest?: string }; reset: () => void }) {
   useEffect(() => {
     console.error(error);
   }, [error]);
@@ -17,7 +17,9 @@ export default function Error({ error, reset }: { error: Error; reset: () => voi
           <p className="mt-3 text-sm text-muted-foreground">
             An unexpected error occurred. Please try again.
           </p>
-          <p className="mt-3 text-xs text-muted-foreground">{error.message}</p>
+          {error.digest && (
+            <p className="mt-2 font-mono text-[11px] text-muted-foreground/60">ref: {error.digest}</p>
+          )}
           <Button onClick={reset} className="mt-5">
             Try again
           </Button>

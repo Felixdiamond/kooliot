@@ -1,9 +1,9 @@
 "use client";
 
-import { useState, useTransition } from "react";
-
+import { useTransition } from "react";
 import { disableDeviceAction, enableDeviceAction } from "@/lib/actions/deviceControl";
 import { isRemoteCapableBoard } from "@/lib/domain/boards";
+import { useToast } from "@/components/ui/toaster";
 import { GlassButton } from "@/components/ui/glass-button";
 import { GlassCard } from "@/components/ui/glass-card";
 
@@ -14,9 +14,8 @@ type DeviceControlPanelProps = {
 };
 
 export function DeviceControlPanel({ deviceId, boardType, isViewer }: DeviceControlPanelProps) {
+  const { toast } = useToast();
   const [isPending, startTransition] = useTransition();
-  const [message, setMessage] = useState<string>("");
-  const [isError, setIsError] = useState(false);
 
   function runAction(action: "enable" | "disable") {
     startTransition(async () => {
@@ -25,8 +24,7 @@ export function DeviceControlPanel({ deviceId, boardType, isViewer }: DeviceCont
           ? await enableDeviceAction(deviceId)
           : await disableDeviceAction(deviceId);
 
-      setIsError(!result.success);
-      setMessage(result.message);
+      toast(result.success ? "success" : "error", result.message);
     });
   }
 
@@ -63,14 +61,8 @@ export function DeviceControlPanel({ deviceId, boardType, isViewer }: DeviceCont
       </div>
 
       {isViewer ? (
-        <p className="mt-3 text-sm text-amber-700 dark:text-amber-300">
+        <p className="mt-3 text-sm text-muted-foreground">
           VIEWER role cannot issue control commands.
-        </p>
-      ) : null}
-
-      {message ? (
-        <p className={isError ? "mt-3 text-sm text-rose-700 dark:text-rose-300" : "mt-3 text-sm text-emerald-700 dark:text-emerald-300"}>
-          {message}
         </p>
       ) : null}
     </GlassCard>

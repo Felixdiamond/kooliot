@@ -4,6 +4,7 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 
 import { revokeAccessGrantAction } from "@/lib/actions/accessGrant";
+import { useToast } from "@/components/ui/toaster";
 import { Button } from "@/components/ui/Button";
 
 type RevokeAccessButtonProps = {
@@ -13,22 +14,23 @@ type RevokeAccessButtonProps = {
 
 export function RevokeAccessButton({ userId, deviceId }: RevokeAccessButtonProps) {
   const router = useRouter();
+  const { toast } = useToast();
   const [isPending, startTransition] = useTransition();
-  const [message, setMessage] = useState<string>("");
+  const [isConfirming, setIsConfirming] = useState(false);
 
   function onRevoke() {
-    const confirmed = window.confirm("Revoke this access grant?");
-    if (!confirmed) {
-      return;
-    }
+    setIsConfirming(true);
+  }
 
+  function onConfirm() {
+    setIsConfirming(false);
     const formData = new FormData();
     formData.set("userId", String(userId));
     formData.set("deviceId", String(deviceId));
 
     startTransition(async () => {
       const result = await revokeAccessGrantAction(formData);
-      setMessage(result.message);
+      toast(result.success ? "success" : "error", result.message);
       if (result.success) {
         router.refresh();
       }
@@ -36,11 +38,22 @@ export function RevokeAccessButton({ userId, deviceId }: RevokeAccessButtonProps
   }
 
   return (
-    <div className="flex flex-col items-end gap-1">
-      <Button variant="secondary" size="sm" onClick={onRevoke} disabled={isPending} isLoading={isPending}>
-        Revoke
-      </Button>
-      {message && <span className="text-[11px] text-[var(--text-secondary)]">{message}</span>}
+    <div className="flex items-center gap-2">
+      {isConfirming ? (
+        <>
+          <span className="text-xs text-muted-foreground">Revoke access?</span>
+          <Button variant="danger" size="sm" onClick={onConfirm} disabled={isPending} isLoading={isPending}>
+            Confirm
+          </Button>
+          <Button variant="secondary" size="sm" onClick={() => setIsConfirming(false)} disabled={isPending}>
+            Cancel
+          </Button>
+        </>
+      ) : (
+        <Button variant="secondary" size="sm" onClick={onRevoke} disabled={isPending} isLoading={isPending}>
+          Revoke
+        </Button>
+      )}
     </div>
   );
 }

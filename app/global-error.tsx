@@ -1,12 +1,13 @@
 "use client";
 
+import "./globals.css";
 import { Button } from "@/components/ui/Button";
 
 export default function GlobalError({
   error,
   reset,
 }: {
-  error: Error;
+  error: Error & { digest?: string };
   reset: () => void;
 }) {
   return (
@@ -17,7 +18,9 @@ export default function GlobalError({
           <p className="mt-3 text-sm text-muted-foreground">
             The app encountered a critical error. Please reload or try again.
           </p>
-          <p className="mt-3 text-xs text-muted-foreground">{error.message}</p>
+          {error.digest && (
+            <p className="mt-2 font-mono text-[11px] text-muted-foreground/60">ref: {error.digest}</p>
+          )}
           <Button className="mt-5" onClick={reset}>
             Recover
           </Button>

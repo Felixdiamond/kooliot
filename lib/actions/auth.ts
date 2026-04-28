@@ -41,6 +41,7 @@ async function setSessionCookie(userId: number, role: SessionRole): Promise<void
 }
 
 export async function registerUserAction(formData: FormData): Promise<ActionResult> {
+  try {
   const parsed = RegisterUserSchema.safeParse({
     email: formData.get("email"),
     password: formData.get("password"),
@@ -97,9 +98,15 @@ export async function registerUserAction(formData: FormData): Promise<ActionResu
   logAuthAttempt({ username: email, result: "success" });
 
   return { success: true };
+  } catch (error) {
+    logAuthAttempt({ username: String(formData.get("email") ?? "unknown"), result: "failure", reason: "unexpected_error" });
+    logError("auth.register.unexpected", error);
+    return { success: false, error: "Registration failed. Please try again." };
+  }
 }
 
 export async function loginAction(formData: FormData): Promise<ActionResult> {
+  try {
   const parsed = LoginSchema.safeParse({
     email: formData.get("email"),
     password: formData.get("password"),
@@ -135,4 +142,9 @@ export async function loginAction(formData: FormData): Promise<ActionResult> {
   logAuthAttempt({ username: email, result: "success" });
 
   return { success: true };
+  } catch (error) {
+    logAuthAttempt({ username: String(formData.get("email") ?? "unknown"), result: "failure", reason: "unexpected_error" });
+    logError("auth.login.unexpected", error);
+    return { success: false, error: "Sign-in failed. Please try again." };
+  }
 }

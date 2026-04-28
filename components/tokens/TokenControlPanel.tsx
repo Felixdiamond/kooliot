@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { Check, Copy, Sparkles } from 'lucide-react';
 
 import { generateTokenAction } from '@/lib/actions/generateToken';
+import { useToast } from '@/components/ui/toaster';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 
@@ -21,6 +22,7 @@ function formatTokenForDisplay(token: string): string {
 
 export function TokenControlPanel({ deviceId, isViewer }: TokenControlPanelProps) {
   const router = useRouter();
+  const { toast } = useToast();
   const [tokenType, setTokenType] = useState<TokenType>('ACTIVATE');
   const [days, setDays] = useState('30');
   const [generatedToken, setGeneratedToken] = useState<string | null>(null);
@@ -54,11 +56,14 @@ export function TokenControlPanel({ deviceId, isViewer }: TokenControlPanelProps
 
       const result = await generateTokenAction(formData);
       if (!result.success || !result.token) {
-        setError(result.error ?? 'Failed to generate token');
+        const msg = result.error ?? 'Failed to generate token';
+        setError(msg);
+        toast('error', msg);
         return;
       }
 
       setGeneratedToken(result.token);
+      toast('success', 'Token generated successfully');
       router.refresh();
     });
   };
@@ -71,8 +76,9 @@ export function TokenControlPanel({ deviceId, isViewer }: TokenControlPanelProps
     try {
       await navigator.clipboard.writeText(generatedToken);
       setCopied(true);
+      toast('success', 'Token copied to clipboard');
     } catch {
-      setError('Unable to copy token to clipboard.');
+      toast('error', 'Unable to copy token to clipboard.');
     }
   };
 

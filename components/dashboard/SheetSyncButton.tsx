@@ -1,21 +1,18 @@
 'use client';
 
-import { useState, useTransition } from 'react';
+import { useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 
 import { Button } from '@/components/ui/Button';
+import { useToast } from '@/components/ui/toaster';
 
 export function SheetSyncButton() {
   const router = useRouter();
+  const { toast } = useToast();
   const [isPending, startTransition] = useTransition();
-  const [message, setMessage] = useState<string>('');
-  const [isError, setIsError] = useState(false);
 
   function runSync() {
     startTransition(async () => {
-      setMessage('');
-      setIsError(false);
-
       try {
         const response = await fetch('/api/admin/sync/sheets', {
           method: 'POST',
@@ -30,33 +27,25 @@ export function SheetSyncButton() {
         };
 
         if (!response.ok) {
-          setIsError(true);
-          setMessage(payload.error ?? payload.message ?? 'Sheet sync failed');
+          toast('error', payload.error ?? payload.message ?? 'Sheet sync failed');
           return;
         }
 
         const summary = payload.summary;
-        setMessage(
+        toast(
+          'success',
           `Sheet sync complete: ${summary?.created ?? 0} created, ${summary?.updated ?? 0} updated, ${summary?.skipped ?? 0} skipped.`
         );
         router.refresh();
       } catch {
-        setIsError(true);
-        setMessage('Unable to run sheet sync right now.');
+        toast('error', 'Unable to run sheet sync right now.');
       }
     });
   }
 
   return (
-    <div className="flex flex-col items-start gap-2">
-      <Button variant="secondary" onClick={runSync} disabled={isPending} isLoading={isPending}>
-        Sync Sheet Inventory
-      </Button>
-      {message ? (
-        <p className={`text-xs font-medium ${isError ? 'text-status-error' : 'text-status-active'}`}>
-          {message}
-        </p>
-      ) : null}
-    </div>
+    <Button variant="secondary" onClick={runSync} disabled={isPending} isLoading={isPending}>
+      Sync Sheet Inventory
+    </Button>
   );
 }

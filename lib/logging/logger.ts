@@ -78,7 +78,9 @@ export async function withQueryLogging<T>(label: string, queryFn: () => Promise<
       message: error instanceof Error ? error.message : "Unknown database error",
       stack: error instanceof Error ? error.stack : undefined,
     });
-    throw error;
+    // Re-throw a sanitized error — the full details are already in the log above.
+    // Never expose raw SQL or params to the client.
+    throw new Error("A database error occurred. Please try again.");
   }
 }
 

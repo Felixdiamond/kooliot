@@ -113,6 +113,7 @@ export function ViewerTaskPanel({ tasks, freeDevices }: ViewerTaskPanelProps) {
   const [isLocating, setIsLocating] = useState(false);
   const [geoMessage, setGeoMessage] = useState('');
   const [todayDefault] = useState(() => new Date().toISOString().slice(0, 10));
+  const [confirmDeleteId, setConfirmDeleteId] = useState<number | null>(null);
 
   const pickerDevices = useMemo(
     () =>
@@ -187,10 +188,11 @@ export function ViewerTaskPanel({ tasks, freeDevices }: ViewerTaskPanelProps) {
   }
 
   function onDeleteTask(taskId: number) {
-    if (!window.confirm('Delete this open task?')) {
-      return;
-    }
+    setConfirmDeleteId(taskId);
+  }
 
+  function onConfirmDelete(taskId: number) {
+    setConfirmDeleteId(null);
     startTransition(async () => {
       const formData = new FormData();
       formData.set('taskId', String(taskId));
@@ -548,15 +550,40 @@ export function ViewerTaskPanel({ tasks, freeDevices }: ViewerTaskPanelProps) {
                         {task.status}
                       </span>
                       {task.status === 'OPEN' ? (
-                        <Button
-                          type="button"
-                          size="sm"
-                          variant="danger"
-                          disabled={isPending}
-                          onClick={() => onDeleteTask(task.id)}
-                        >
-                          Delete
-                        </Button>
+                        confirmDeleteId === task.id ? (
+                          <div className="flex items-center gap-2">
+                            <span className="text-xs text-muted-foreground">Delete?</span>
+                            <Button
+                              type="button"
+                              size="sm"
+                              variant="danger"
+                              disabled={isPending}
+                              isLoading={isPending}
+                              onClick={() => onConfirmDelete(task.id)}
+                            >
+                              Confirm
+                            </Button>
+                            <Button
+                              type="button"
+                              size="sm"
+                              variant="secondary"
+                              disabled={isPending}
+                              onClick={() => setConfirmDeleteId(null)}
+                            >
+                              Cancel
+                            </Button>
+                          </div>
+                        ) : (
+                          <Button
+                            type="button"
+                            size="sm"
+                            variant="danger"
+                            disabled={isPending}
+                            onClick={() => onDeleteTask(task.id)}
+                          >
+                            Delete
+                          </Button>
+                        )
                       ) : null}
                     </div>
                   </div>

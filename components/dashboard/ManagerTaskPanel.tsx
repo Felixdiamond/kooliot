@@ -122,6 +122,7 @@ export function ManagerTaskPanel({ tasks, freeDevices }: ManagerTaskPanelProps) 
   const [messages, setMessages] = useState<Record<number, { text: string; error: boolean }>>({});
   const [pickerTaskId, setPickerTaskId] = useState<number | null>(null);
   const [selectedDeviceByTask, setSelectedDeviceByTask] = useState<Record<number, number>>({});
+  const [confirmDeleteId, setConfirmDeleteId] = useState<number | null>(null);
 
   function onAssign(taskId: number, event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -151,10 +152,11 @@ export function ManagerTaskPanel({ tasks, freeDevices }: ManagerTaskPanelProps) 
   }
 
   function onDeleteTask(taskId: number) {
-    if (!window.confirm('Delete this open task?')) {
-      return;
-    }
+    setConfirmDeleteId(taskId);
+  }
 
+  function onConfirmDelete(taskId: number) {
+    setConfirmDeleteId(null);
     startTransition(async () => {
       const formData = new FormData();
       formData.set('taskId', String(taskId));
@@ -275,14 +277,26 @@ export function ManagerTaskPanel({ tasks, freeDevices }: ManagerTaskPanelProps) 
                     <p className="text-sm text-status-error">
                       No free {formatBoardTypeLabel(task.requestedBoardType)} boards available.
                     </p>
-                    <Button
-                      type="button"
-                      variant="danger"
-                      disabled={isPending}
-                      onClick={() => onDeleteTask(task.id)}
-                    >
-                      Delete Task
-                    </Button>
+                    {confirmDeleteId === task.id ? (
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs text-muted-foreground">Delete this task?</span>
+                        <Button type="button" variant="danger" size="sm" disabled={isPending} isLoading={isPending} onClick={() => onConfirmDelete(task.id)}>
+                          Confirm
+                        </Button>
+                        <Button type="button" variant="secondary" size="sm" disabled={isPending} onClick={() => setConfirmDeleteId(null)}>
+                          Cancel
+                        </Button>
+                      </div>
+                    ) : (
+                      <Button
+                        type="button"
+                        variant="danger"
+                        disabled={isPending}
+                        onClick={() => onDeleteTask(task.id)}
+                      >
+                        Delete Task
+                      </Button>
+                    )}
                   </div>
                 ) : (
                   <div className="flex flex-col md:flex-row gap-3 md:items-end">
@@ -317,14 +331,26 @@ export function ManagerTaskPanel({ tasks, freeDevices }: ManagerTaskPanelProps) 
                       >
                         Register Board
                       </Button>
-                      <Button
-                        type="button"
-                        variant="danger"
-                        disabled={isPending}
-                        onClick={() => onDeleteTask(task.id)}
-                      >
-                        Delete Task
-                      </Button>
+                      {confirmDeleteId === task.id ? (
+                        <>
+                          <span className="self-center text-xs text-muted-foreground">Delete?</span>
+                          <Button type="button" variant="danger" size="sm" disabled={isPending} isLoading={isPending} onClick={() => onConfirmDelete(task.id)}>
+                            Confirm
+                          </Button>
+                          <Button type="button" variant="secondary" size="sm" disabled={isPending} onClick={() => setConfirmDeleteId(null)}>
+                            Cancel
+                          </Button>
+                        </>
+                      ) : (
+                        <Button
+                          type="button"
+                          variant="danger"
+                          disabled={isPending}
+                          onClick={() => onDeleteTask(task.id)}
+                        >
+                          Delete Task
+                        </Button>
+                      )}
                     </div>
                   </div>
                 )}

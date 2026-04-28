@@ -167,7 +167,7 @@ async function persistPedestalDevicePhoto(formData: FormData): Promise<string | 
   const fileName = `pedestal-device-ids/${Date.now()}-${randomUUID()}.${extension}`;
 
   const blob = await put(fileName, file, {
-    access: "public",
+    access: "private",
     addRandomSuffix: false,
     contentType: file.type,
   });

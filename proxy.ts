@@ -88,5 +88,6 @@ export const config = {
     "/api/devices/:path*",
     "/api/tasks/:path*",
     "/api/task-assignments",
+    "/api/blobs/:path*",
   ],
 };

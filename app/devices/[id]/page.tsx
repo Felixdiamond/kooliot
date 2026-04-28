@@ -250,7 +250,23 @@ export default async function DeviceDetailPage({
                        {customerMetadata.map((item) => (
                          <div key={`meta-${item.key}`}>
                            <p className="text-muted-foreground">{item.key}</p>
-                           <p className="font-medium text-foreground">{item.value}</p>
+                           {item.key === "Pedestal Device Id Image Path" ? (
+                             <a
+                               href={`/api/blobs/pedestal-photo?url=${encodeURIComponent(item.value)}`}
+                               target="_blank"
+                               rel="noopener noreferrer"
+                               className="mt-1 block"
+                             >
+                               {/* eslint-disable-next-line @next/next/no-img-element */}
+                               <img
+                                 src={`/api/blobs/pedestal-photo?url=${encodeURIComponent(item.value)}`}
+                                 alt="Pedestal device ID"
+                                 className="max-w-[240px] rounded border border-border object-contain"
+                               />
+                             </a>
+                           ) : (
+                             <p className="font-medium text-foreground">{item.value}</p>
+                           )}
                          </div>
                        ))}
                      </div>

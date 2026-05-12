@@ -44,12 +44,12 @@ function toNullable(value?: string | null): string | null {
 async function ensureAccessGrantTx(
   tx: DbTransaction,
   userId: number,
-  deviceId: number,
+  _deviceId: number,
   role: Role,
   grantedBy: number
 ): Promise<void> {
   const existing = await tx.query.accessGrants.findFirst({
-    where: and(eq(accessGrants.userId, userId), eq(accessGrants.deviceId, deviceId)),
+    where: eq(accessGrants.userId, userId),
     columns: { id: true },
   });
 
@@ -57,7 +57,7 @@ async function ensureAccessGrantTx(
     return;
   }
 
-  await tx.insert(accessGrants).values({ userId, deviceId, role, grantedBy });
+  await tx.insert(accessGrants).values({ userId, role, grantedBy });
 }
 
 export async function createAssignmentTask(input: CreateAssignmentTaskInput) {

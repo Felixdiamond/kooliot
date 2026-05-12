@@ -114,7 +114,7 @@ export async function registerDeviceAction(
     const device = await registerDevice(parsed.data);
 
     const creatorRole = role === "ADMIN" ? "ADMIN" : "MANAGER";
-    await createAccessGrant(userId, device.id, creatorRole, userId);
+    await createAccessGrant(userId, creatorRole, userId);
 
     return {
       success: true,
@@ -178,7 +178,6 @@ export async function assignDeviceAction(
     try {
       await createAccessGrant(
         userId,
-        assigned.id,
         role === "ADMIN" ? "ADMIN" : "MANAGER",
         userId
       );

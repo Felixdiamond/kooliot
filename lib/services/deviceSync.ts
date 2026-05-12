@@ -2,7 +2,7 @@ import { createHash } from "node:crypto";
 import { readdir, readFile } from "node:fs/promises";
 import path from "node:path";
 
-import { and, eq } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 
 import { db } from "@/db/client";
 import { accessGrants, devices } from "@/db/schema";
@@ -120,12 +120,12 @@ async function extractInnovexSerialsFromCsv(csvPath: string): Promise<string[]> 
 
 async function ensureAccessGrant(
   userId: number,
-  deviceId: number,
+  _deviceId: number,
   role: Role,
   grantedBy: number
 ): Promise<boolean> {
   const existing = await db.query.accessGrants.findFirst({
-    where: and(eq(accessGrants.userId, userId), eq(accessGrants.deviceId, deviceId)),
+    where: eq(accessGrants.userId, userId),
     columns: { id: true },
   });
 
@@ -135,7 +135,6 @@ async function ensureAccessGrant(
 
   await db.insert(accessGrants).values({
     userId,
-    deviceId,
     role,
     grantedBy,
   });

@@ -9,6 +9,7 @@ import {
   or,
   placeholder,
   sql,
+  type SQL,
 } from "drizzle-orm";
 import { z } from "zod";
 
@@ -332,7 +333,17 @@ export async function listDevices(
   const pageSize = Math.max(1, Math.min(100, pagination.pageSize || 20));
   const offset = (page - 1) * pageSize;
 
-  const whereClauses = [eq(accessGrants.userId, userId)];
+  const whereClauses: SQL[] = [];
+
+  // Verify the user has a grant (non-admins call this; grants now apply to all devices)
+  const grant = await db.query.accessGrants.findFirst({
+    where: eq(accessGrants.userId, userId),
+    columns: { id: true },
+  });
+
+  if (!grant) {
+    return { items: [], total: 0, page, pageSize };
+  }
 
   if (filters.serial) {
     whereClauses.push(ilike(devices.serialNumber, `%${filters.serial}%`));
@@ -377,8 +388,7 @@ export async function listDevices(
       createdAt: devices.createdAt,
       updatedAt: devices.updatedAt,
     })
-    .from(accessGrants)
-    .innerJoin(devices, eq(accessGrants.deviceId, devices.id))
+    .from(devices)
     .where(whereExpr)
     .orderBy(desc(devices.createdAt))
     .limit(pageSize)
@@ -386,8 +396,7 @@ export async function listDevices(
 
   const [{ count }] = await db
     .select({ count: sql<number>`count(*)` })
-    .from(accessGrants)
-    .innerJoin(devices, eq(accessGrants.deviceId, devices.id))
+    .from(devices)
     .where(whereExpr);
 
   return {
@@ -432,16 +441,12 @@ export async function searchDevices(userId: number, query: string) {
       createdAt: devices.createdAt,
       updatedAt: devices.updatedAt,
     })
-    .from(accessGrants)
-    .innerJoin(devices, eq(accessGrants.deviceId, devices.id))
+    .from(devices)
     .where(
-      and(
-        eq(accessGrants.userId, userId),
-        or(
-          ilike(devices.serialNumber, `%${sanitizedQuery}%`),
-          ilike(devices.angazaId, `%${sanitizedQuery}%`),
-          ilike(devices.paygoId, `%${sanitizedQuery}%`)
-        )
+      or(
+        ilike(devices.serialNumber, `%${sanitizedQuery}%`),
+        ilike(devices.angazaId, `%${sanitizedQuery}%`),
+        ilike(devices.paygoId, `%${sanitizedQuery}%`)
       )
     )
     .orderBy(desc(devices.createdAt))

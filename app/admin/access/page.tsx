@@ -7,8 +7,7 @@ import { PageHeader } from "@/components/shared/PageHeader";
 import { AccessGrantForm } from "@/components/admin/access-grant-form";
 import { RevokeAccessButton } from "@/components/admin/revoke-access-button";
 import { db } from "@/db/client";
-import { accessGrants, devices, users } from "@/db/schema";
-import { formatBoardTypeLabel } from "@/lib/domain/boards";
+import { accessGrants, users } from "@/db/schema";
 
 export default async function AccessManagementPage() {
   const requestHeaders = await headers();
@@ -18,30 +17,22 @@ export default async function AccessManagementPage() {
     redirect("/dashboard");
   }
 
-  const [allUsers, allDevices, grants] = await Promise.all([
+  const [allUsers, grants] = await Promise.all([
     db
       .select({ id: users.id, email: users.email, name: users.name })
       .from(users)
       .orderBy(users.name),
     db
-      .select({ id: devices.id, serialNumber: devices.serialNumber, boardType: devices.boardType })
-      .from(devices)
-      .orderBy(devices.serialNumber),
-    db
       .select({
         id: accessGrants.id,
         userId: accessGrants.userId,
-        deviceId: accessGrants.deviceId,
         role: accessGrants.role,
         createdAt: accessGrants.createdAt,
         userName: users.name,
         userEmail: users.email,
-        deviceSerial: devices.serialNumber,
-        deviceBoardType: devices.boardType,
       })
       .from(accessGrants)
-      .innerJoin(users, eq(accessGrants.userId, users.id))
-      .innerJoin(devices, eq(accessGrants.deviceId, devices.id)),
+      .innerJoin(users, eq(accessGrants.userId, users.id)),
   ]);
 
   return (
@@ -56,17 +47,13 @@ export default async function AccessManagementPage() {
           <Shield size={18} strokeWidth={2.25} />
         </div>
         <p className="pr-10 text-sm leading-relaxed text-muted-foreground">
-          Manage user-device access grants and role assignments. Grant or revoke permissions for users to control specific devices.
+          Manage user access grants and role assignments. Grant or revoke permissions for users to control all devices.
         </p>
       </div>
 
       <div className="mb-10">
         <AccessGrantForm
           users={allUsers.map((user) => ({ id: user.id, label: `${user.name} (${user.email})` }))}
-          devices={allDevices.map((device) => ({
-            id: device.id,
-            label: `${device.serialNumber} (${formatBoardTypeLabel(device.boardType)})`,
-          }))}
         />
       </div>
 
@@ -98,9 +85,6 @@ export default async function AccessManagementPage() {
                     User
                   </th>
                   <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                    Device
-                  </th>
-                  <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wide text-muted-foreground">
                     Role
                   </th>
                   <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wide text-muted-foreground">
@@ -119,10 +103,6 @@ export default async function AccessManagementPage() {
                       <div className="text-xs text-muted-foreground font-medium">{grant.userEmail}</div>
                     </td>
                     <td className="px-6 py-4">
-                      <div className="text-sm font-semibold text-foreground">{grant.deviceSerial}</div>
-                      <div className="text-xs text-muted-foreground font-medium">{formatBoardTypeLabel(grant.deviceBoardType)}</div>
-                    </td>
-                    <td className="px-6 py-4">
                       <span className="inline-flex items-center rounded-full border border-primary/30 bg-primary/10 px-3 py-1 text-xs font-semibold uppercase text-primary">
                         {grant.role}
                       </span>
@@ -131,7 +111,7 @@ export default async function AccessManagementPage() {
                       {grant.createdAt.toLocaleString()}
                     </td>
                     <td className="px-6 py-4 text-right">
-                      <RevokeAccessButton userId={grant.userId} deviceId={grant.deviceId} />
+                      <RevokeAccessButton userId={grant.userId} />
                     </td>
                   </tr>
                 ))}

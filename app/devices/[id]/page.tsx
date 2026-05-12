@@ -68,9 +68,9 @@ export default async function DeviceDetailPage({
 
   const isAdmin = userRole === "ADMIN" || userRole === "MANAGER";
 
-  // Non-admins must have been explicitly granted access to this device
+  // Non-admins must have a grant to access any device
   if (!isAdmin) {
-    const canAccess = await checkAccess(userId, deviceId);
+    const canAccess = await checkAccess(userId);
     if (!canAccess) {
       notFound();
     }

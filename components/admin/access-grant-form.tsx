@@ -13,10 +13,9 @@ type Option = {
 
 type AccessGrantFormProps = {
   users: Option[];
-  devices: Option[];
 };
 
-export function AccessGrantForm({ users, devices }: AccessGrantFormProps) {
+export function AccessGrantForm({ users }: AccessGrantFormProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [message, setMessage] = useState<string>("");
@@ -39,7 +38,7 @@ export function AccessGrantForm({ users, devices }: AccessGrantFormProps) {
         Create Access Grant
       </h2>
 
-      <form action={onSubmit} className="grid grid-cols-1 gap-4 md:grid-cols-4">
+      <form action={onSubmit} className="grid grid-cols-1 gap-4 md:grid-cols-3">
         <div>
           <label className="font-mono-data mb-2 block text-[11px] uppercase tracking-wide text-muted-foreground">
             User
@@ -53,24 +52,6 @@ export function AccessGrantForm({ users, devices }: AccessGrantFormProps) {
             {users.map((user) => (
               <option key={user.id} value={user.id}>
                 {user.label}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        <div>
-          <label className="font-mono-data mb-2 block text-[11px] uppercase tracking-wide text-muted-foreground">
-            Device
-          </label>
-          <select
-            name="deviceId"
-            disabled={isPending}
-            className="h-10 w-full rounded-md border border-border bg-input px-3 text-[13px] text-foreground transition-colors focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/25 disabled:opacity-50"
-          >
-            <option value="">Select device</option>
-            {devices.map((device) => (
-              <option key={device.id} value={device.id}>
-                {device.label}
               </option>
             ))}
           </select>

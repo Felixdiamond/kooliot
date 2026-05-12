@@ -98,9 +98,6 @@ export const accessGrants = pgTable(
     userId: integer("user_id")
       .references(() => users.id)
       .notNull(),
-    deviceId: integer("device_id")
-      .references(() => devices.id)
-      .notNull(),
     role: varchar("role", { length: 20 }).notNull(),
     grantedBy: integer("granted_by")
       .references(() => users.id)
@@ -108,12 +105,7 @@ export const accessGrants = pgTable(
     createdAt: timestamp("created_at", { mode: "date" }).defaultNow().notNull(),
   },
   (table) => ({
-    userDeviceIdx: uniqueIndex("access_grants_user_device_idx").on(
-      table.userId,
-      table.deviceId
-    ),
-    userIdx: index("access_grants_user_idx").on(table.userId),
-    deviceIdx: index("access_grants_device_idx").on(table.deviceId),
+    userIdx: uniqueIndex("access_grants_user_idx").on(table.userId),
   })
 );
 

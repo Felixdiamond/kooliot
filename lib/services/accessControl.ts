@@ -1,4 +1,4 @@
-import { and, eq, ilike, or, sql } from "drizzle-orm";
+import { eq, ilike, or, sql } from "drizzle-orm";
 
 import { db } from "@/db/client";
 import { accessGrants, auditLogs, devices, users } from "@/db/schema";
@@ -71,8 +71,8 @@ export async function countAllDevices(search = "") {
   return Number(result[0]?.count ?? 0);
 }
 
-// For non-admin users: only returns devices they have been granted access to.
-export async function listUserDevices(userId: number) {
+// For non-admin users: grants are global (not per-device), so return all devices.
+export async function listUserDevices(_userId: number) {
   return db
     .select({
       id: devices.id,
@@ -90,9 +90,7 @@ export async function listUserDevices(userId: number) {
       createdAt: devices.createdAt,
       updatedAt: devices.updatedAt,
     })
-    .from(accessGrants)
-    .innerJoin(devices, eq(accessGrants.deviceId, devices.id))
-    .where(eq(accessGrants.userId, userId));
+    .from(devices);
 }
 function hasRequiredRole(actual: Role, required?: Role): boolean {
   if (!required) {
@@ -104,11 +102,10 @@ function hasRequiredRole(actual: Role, required?: Role): boolean {
 
 export async function checkAccess(
   userId: number,
-  deviceId: number,
   requiredRole?: Role
 ): Promise<boolean> {
   const grant = await db.query.accessGrants.findFirst({
-    where: and(eq(accessGrants.userId, userId), eq(accessGrants.deviceId, deviceId)),
+    where: eq(accessGrants.userId, userId),
     columns: {
       role: true,
     },
@@ -123,22 +120,21 @@ export async function checkAccess(
 
 export async function createAccessGrant(
   userId: number,
-  deviceId: number,
   role: Role,
   grantedBy: number
 ) {
   const existingGrant = await db.query.accessGrants.findFirst({
-    where: and(eq(accessGrants.userId, userId), eq(accessGrants.deviceId, deviceId)),
+    where: eq(accessGrants.userId, userId),
   });
 
   if (existingGrant) {
-    throw new Error("Access grant already exists for this user and device");
+    throw new Error("Access grant already exists for this user");
   }
 
   const created = await db.transaction(async (tx) => {
     const inserted = await tx
       .insert(accessGrants)
-      .values({ userId, deviceId, role, grantedBy })
+      .values({ userId, role, grantedBy })
       .returning();
 
     await tx.insert(auditLogs).values({
@@ -148,7 +144,6 @@ export async function createAccessGrant(
       resourceId: inserted[0]?.id,
       details: {
         userId,
-        deviceId,
         role,
       },
     });
@@ -165,12 +160,11 @@ export async function createAccessGrant(
 
 export async function revokeAccessGrant(
   userId: number,
-  deviceId: number,
   revokedBy: number
 ): Promise<void> {
   await db.transaction(async (tx) => {
     const existing = await tx.query.accessGrants.findFirst({
-      where: and(eq(accessGrants.userId, userId), eq(accessGrants.deviceId, deviceId)),
+      where: eq(accessGrants.userId, userId),
     });
 
     if (!existing) {
@@ -179,7 +173,7 @@ export async function revokeAccessGrant(
 
     await tx
       .delete(accessGrants)
-      .where(and(eq(accessGrants.userId, userId), eq(accessGrants.deviceId, deviceId)));
+      .where(eq(accessGrants.userId, userId));
 
     await tx.insert(auditLogs).values({
       userId: revokedBy,
@@ -188,7 +182,6 @@ export async function revokeAccessGrant(
       resourceId: existing.id,
       details: {
         userId,
-        deviceId,
         role: existing.role,
       },
     });
@@ -196,19 +189,4 @@ export async function revokeAccessGrant(
 }
 
 
-export async function listDeviceUsers(deviceId: number) {
-  return db
-    .select({
-      id: accessGrants.id,
-      userId: accessGrants.userId,
-      deviceId: accessGrants.deviceId,
-      role: accessGrants.role,
-      grantedBy: accessGrants.grantedBy,
-      createdAt: accessGrants.createdAt,
-      userName: users.name,
-      userEmail: users.email,
-    })
-    .from(accessGrants)
-    .innerJoin(users, eq(accessGrants.userId, users.id))
-    .where(eq(accessGrants.deviceId, deviceId));
-}
+

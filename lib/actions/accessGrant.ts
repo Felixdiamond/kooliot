@@ -8,13 +8,11 @@ import { createAccessGrant, revokeAccessGrant } from "@/lib/services/accessContr
 
 const CreateAccessGrantSchema = z.object({
   userId: z.number().int().positive(),
-  deviceId: z.number().int().positive(),
   role: z.enum(["ADMIN", "MANAGER", "VIEWER"]),
 });
 
 const RevokeAccessGrantSchema = z.object({
   userId: z.number().int().positive(),
-  deviceId: z.number().int().positive(),
 });
 
 type AccessGrantActionResult = {
@@ -33,7 +31,6 @@ async function resolveActor() {
 export async function createAccessGrantAction(formData: FormData): Promise<AccessGrantActionResult> {
   const parsed = CreateAccessGrantSchema.safeParse({
     userId: Number(formData.get("userId")),
-    deviceId: Number(formData.get("deviceId")),
     role: formData.get("role"),
   });
 
@@ -51,11 +48,11 @@ export async function createAccessGrantAction(formData: FormData): Promise<Acces
   }
 
   try {
-    await createAccessGrant(parsed.data.userId, parsed.data.deviceId, parsed.data.role, actorId);
+    await createAccessGrant(parsed.data.userId, parsed.data.role, actorId);
     return { success: true, message: "Access grant created" };
   } catch (error) {
     if (isUniqueConstraintError(error)) {
-      return { success: false, message: "Access grant already exists for this user and device" };
+      return { success: false, message: "Access grant already exists for this user" };
     }
 
     return {
@@ -68,7 +65,6 @@ export async function createAccessGrantAction(formData: FormData): Promise<Acces
 export async function revokeAccessGrantAction(formData: FormData): Promise<AccessGrantActionResult> {
   const parsed = RevokeAccessGrantSchema.safeParse({
     userId: Number(formData.get("userId")),
-    deviceId: Number(formData.get("deviceId")),
   });
 
   if (!parsed.success) {
@@ -88,7 +84,7 @@ export async function revokeAccessGrantAction(formData: FormData): Promise<Acces
   }
 
   try {
-    await revokeAccessGrant(parsed.data.userId, parsed.data.deviceId, actorId);
+    await revokeAccessGrant(parsed.data.userId, actorId);
     return { success: true, message: "Access grant revoked" };
   } catch (error) {
     return {

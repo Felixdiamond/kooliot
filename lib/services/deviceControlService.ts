@@ -18,7 +18,7 @@ async function sendDeviceCommand(
   userId: number,
   enabled: boolean
 ): Promise<CommandResult> {
-  const hasAccess = await checkAccess(userId, deviceId, "MANAGER");
+  const hasAccess = await checkAccess(userId, "MANAGER");
 
   if (!hasAccess) {
     return {

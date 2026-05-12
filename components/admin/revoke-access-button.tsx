@@ -9,10 +9,9 @@ import { Button } from "@/components/ui/Button";
 
 type RevokeAccessButtonProps = {
   userId: number;
-  deviceId: number;
 };
 
-export function RevokeAccessButton({ userId, deviceId }: RevokeAccessButtonProps) {
+export function RevokeAccessButton({ userId }: RevokeAccessButtonProps) {
   const router = useRouter();
   const { toast } = useToast();
   const [isPending, startTransition] = useTransition();
@@ -26,7 +25,6 @@ export function RevokeAccessButton({ userId, deviceId }: RevokeAccessButtonProps
     setIsConfirming(false);
     const formData = new FormData();
     formData.set("userId", String(userId));
-    formData.set("deviceId", String(deviceId));
 
     startTransition(async () => {
       const result = await revokeAccessGrantAction(formData);

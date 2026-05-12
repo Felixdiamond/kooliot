@@ -65,7 +65,7 @@ export async function generateTokenAction(
     tokenType === "ACTIVATE" ? "SET_TIME" : (tokenType as TokenType);
   const expectedTokenValue = normalizedTokenType === "DISABLE" ? PAYG_DISABLE_VALUE : value;
 
-  const hasManagerAccess = await checkAccess(userId, deviceId, "MANAGER");
+  const hasManagerAccess = await checkAccess(userId, "MANAGER");
 
   if (!hasManagerAccess && userRole !== "ADMIN") {
     return { success: false, error: "Access denied for this device" };
